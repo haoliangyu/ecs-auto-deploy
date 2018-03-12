@@ -1,8 +1,9 @@
+sudo: required
 services:
-- docker
+  - docker
 before_install:
-- pip install --user awscli
-- export PATH=$PATH:$HOME/.local/bin
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 deploy:
   provider: script
   script: bash deploy.sh
