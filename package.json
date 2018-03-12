@@ -1,0 +1,25 @@
+{
+  "name": "ecs-auto-deploy",
+  "version": "1.0.0",
+  "description": "AWS ECS auto-deployment with Travis CI & Docker Hub",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haoliangyu/ecs-auto-deploy.git"
+  },
+  "keywords": [
+    "aws-ecs"
+  ],
+  "author": "Haoliang Yu <haholiang.yu@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/haoliangyu/ecs-auto-deploy/issues"
+  },
+  "homepage": "https://github.com/haoliangyu/ecs-auto-deploy#readme",
+  "dependencies": {
+    "express": "^4.16.2"
+  }
+}
