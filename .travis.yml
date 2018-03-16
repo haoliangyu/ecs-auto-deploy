@@ -4,9 +4,6 @@ node_js:
   - "node"
 services:
   - docker
-before_install:
-  - pip install --user awscli
-  - export PATH=$PATH:$HOME/.local/bin
 deploy:
   provider: script
   script: bash deploy.sh
