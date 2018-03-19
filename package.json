@@ -11,7 +11,9 @@
     "url": "git+https://github.com/haoliangyu/ecs-auto-deploy.git"
   },
   "keywords": [
-    "aws-ecs"
+    "aws-ecs",
+    "travis-ci",
+    "deployment"
   ],
   "author": "Haoliang Yu <haholiang.yu@outlook.com>",
   "license": "MIT",
