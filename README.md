@@ -66,8 +66,6 @@ Note that the [ecs-deploy](https://github.com/silinternational/ecs-deploy) libra
 The following configuration ([.travis.yml](./.travis.yml)) is used to set up the deployment pipeline for every update on the `master` branch.
 
 ``` yaml
-sudo: required
-
 # We are using a nodejs application as an example
 language: node_js
 node_js:
