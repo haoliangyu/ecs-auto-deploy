@@ -6,33 +6,19 @@ This is an example project to show **how to use Travis CI for AWS ECS auto-deplo
 
 ## how-to
 
-This repository utilizes the [script deployment](https://docs.travis-ci.com/user/deployment/script/) of Travis CI and the  [ecs-deploy](https://github.com/silinternational/ecs-deploy) library.
+This repository utilizes the [script deployment](https://docs.travis-ci.com/user/deployment/script/) of Travis CI and the [ecs-deploy](https://github.com/silinternational/ecs-deploy) library.
 
-The purpose of the CI pipeline is that at each PR merged into the master branch, it will
+It establishes a continuous deployment pipeline to the [AWS ECS](https://aws.amazon.com/ecs/), which is triggered by every update on the `master` branch (like a PR).
+
+### Deployment Script
+
+A deployment script ([deploy.sh](./deploy.sh)) is used to build, push, and deploy the container image:
 
 * build the new docker image
 
 * push to an image repository with the `latest` tag
 
 * update the AWS ECS service with the new image.
-
-The following bash script is to finish these tasks. It uses three environment variables to determine which and where the service should be updated:
-
-* `IMAGE_REPO_URL`
-
-  the destination image repository url
-
-* `CLUSTER_NAME`
-
-  AWS ECS cluster name
-
-* `SERVICE_NAME`
-
-  AWS ECS cluster service name
-
-Additionally, it reads the AWS credential either from the environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`) or the aws config file. For the full example of the needed environment variables, see [.env.example](./.env.example).
-
-Note that the [ecs-deploy](https://github.com/silinternational/ecs-deploy) library assumes that the target cluster and service are running and it is going to updat the task definition then deploy. If the service doesn't exist, the library will throw an error.
 
 ``` bash
 # install aws-sdk
@@ -48,8 +34,13 @@ curl https://raw.githubusercontent.com/silinternational/ecs-deploy/master/ecs-de
   sudo tee -a /usr/bin/ecs-deploy
 sudo chmod +x /usr/bin/ecs-deploy
 
-# build the new image and push to the destination repository
-eval $(aws ecr get-login --region us-east-1)
+# Use this for AWS ECR
+# eval $(aws ecr get-login --region us-east-1)
+
+# Use this for Docker Hub
+docker login --username $DOCKER_HUB_USER --password $DOCKER_HUB_PSW
+
+# Build and push the image to the repository
 docker build -t haoliangyu/ecs-auto-deploy .
 docker tag haoliangyu/ecs-auto-deploy:latest $IMAGE_REPO_URL:latest
 docker push $IMAGE_REPO_URL:latest
@@ -58,22 +49,45 @@ docker push $IMAGE_REPO_URL:latest
 ecs-deploy -c $CLUSTER_NAME -n $SERVICE_NAME -i $IMAGE_REPO_URL:latest
 ```
 
-In the Travice CI configuration, the `docker` service is required for the deployment bash script. In the `deploy` section, it use the script deployment and execut the `deploy.sh` script when the master branch is updated. In such setting, every time a PR to master is merged, the AWS ECS deployment will be automatically triggered.
+This script uses several environment variables to provide secrets:
+
+* `IMAGE_REPO_URL`: the url or name of container image repository
+* `CLUSTER_NAME`: AWS ECS cluster name
+* `SERVICE_NAME`: AWS ECS cluster service name
+
+To login AWS, it reads the AWS credential either from the environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`) or the aws config file. If [Docker Hub](https://hub.docker.com) is used to host the image, the script uses the `DOCKER_HUB_USER` and `DOCKER_HUB_PSW` for `docker login`.
+
+A full example of needed environment variables is at [.env.example](./.env.example).
+
+Note that the [ecs-deploy](https://github.com/silinternational/ecs-deploy) library assumes that the target cluster and service are running and it is going to updat the task definition then deploy. If the service doesn't exist, the library will throw an error.
+
+### Travis CI Configuration
+
+The following configuration ([.travis.yml](./.travis.yml)) is used to set up the deployment pipeline for every update on the `master` branch.
 
 ``` yaml
 sudo: required
+
+# We are using a nodejs application as an example
 language: node_js
 node_js:
   - "node"
+
+# Install docker
 services:
   - docker
+
+# Use script deployment and specify the script path
 deploy:
   provider: script
   script: bash deploy.sh
+  # Only deploy when the master branch is updated
   on:
     branch: master
 ```
 
+To enable it, you need to add all required environment variables to the Travis CI project setting.
+
 ## blog post
 
-For more details, read this blog post [AWS ECS continuous deployment with Travis CI](https://haoliangyu.github.io/blog/2018/03/19/AWS-ECS-auto-deployment-with-Travis-CI/).
+For more details, please take a look at this blog post [AWS ECS continuous deployment with Travis CI](https://haoliangyu.github.io/blog/2018/03/19/AWS-ECS-auto-deployment-with-Travis-CI/).
